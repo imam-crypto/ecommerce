@@ -29,6 +29,7 @@ func main() {
 
 	// Routes V1
 	routes.UserRoute(&config, db, v1)
+	router.Run()
 }
 
 func configInitalization() (utils.Config, *gorm.DB, error) {

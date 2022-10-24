@@ -8,6 +8,8 @@ import (
 
 type UserRepository interface {
 	GetUser(id string) (entities.User, error)
+	CreateUser(user entities.User) (entities.User, error)
+	FindByEmail(email string) (entities.User, error)
 }
 type userRepository struct {
 	db *gorm.DB
@@ -25,6 +27,25 @@ func (r *userRepository) GetUser(id string) (entities.User, error) {
 
 	if findUser != nil {
 		return user, findUser
+	}
+	return user, nil
+}
+func (r *userRepository) FindByEmail(email string) (entities.User, error) {
+
+	var user entities.User
+
+	findUser := r.db.Where("email =?", email).First(&user).Error
+
+	if findUser != nil {
+		return user, findUser
+	}
+	return user, nil
+}
+func (r *userRepository) CreateUser(user entities.User) (entities.User, error) {
+	err := r.db.Create(&user).Error
+
+	if err != nil {
+		return user, err
 	}
 	return user, nil
 }

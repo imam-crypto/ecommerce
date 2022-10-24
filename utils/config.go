@@ -11,6 +11,7 @@ type Config struct {
 	DbPassword  string `mapstructure:"DB_PASSWORD"`
 	DbTz        string `mapstructure:"DB_TZ"`
 	GormMigrate string `mapstructure:"GORM_MIGRATE"`
+	SecretKey   string `mapstructure:"SECRET_KEY"`
 }
 
 func LoadConfig(path string, testing bool) (config Config, err error) {

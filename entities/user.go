@@ -10,7 +10,8 @@ import (
 type User struct {
 	Base
 	Name               string
-	UserName           string
+	Username           string
+	Email              string
 	NoKTP              string
 	Gender             string
 	Address            string
@@ -21,6 +22,7 @@ type User struct {
 	Image              string
 	ResetPasswordToken string
 	Role               string
+	Avatar             string
 }
 
 func (t *User) BeforeCreate(db *gorm.DB) (err error) {

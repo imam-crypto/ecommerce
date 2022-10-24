@@ -2,6 +2,7 @@ package routes
 
 import (
 	"ecommerce/handlers"
+	"ecommerce/middleware"
 	"ecommerce/repositories"
 	"ecommerce/services"
 	"ecommerce/utils"
@@ -11,18 +12,14 @@ import (
 )
 
 func UserRoute(config *utils.Config, db *gorm.DB, router *gin.RouterGroup) {
-
-	// bookRepo := repositories.NewBookRepositories(db)
-	// bookService := services.NewBookService(bookRepo)
-	// bookHandler := handlers.NewBookHandler(bookService)
-	// authService := middleware.NewService()
+	authService := middleware.NewService()
 	pagination := utils.NewPagination()
 	userRepo := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
-	userhandler := handlers.NewUserHandlers(userService, *pagination)
+	userhandler := handlers.NewUserHandlers(authService, userService, *pagination)
 
-	// router.POST("/user/register", userhandler.Register)
-	// router.POST("/user/login-member", userhandler.Login)
+	router.POST("/user/register", userhandler.Regiter)
+	router.POST("/user/login-member", userhandler.Login)
 	// router.POST("/user/login-admin", userhandler.Login)
 	// router.GET("/user/forgot-password", userhandler.ForgotPassword)
 	// router.POST("/user/reset-password", userhandler.ResetPassword)
