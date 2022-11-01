@@ -16,7 +16,6 @@ func PaginateUserResponse(us *entities.User) ResponseUser {
 		Email:    us.Email,
 		Role:     us.Role,
 	}
-
 	return FormatUser
 
 }

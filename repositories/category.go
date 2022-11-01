@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"ecommerce/entities"
+	"ecommerce/utils"
 	"gorm.io/gorm"
 )
 
@@ -10,6 +11,7 @@ type CategoryRepository interface {
 	FindByID(id string) (entities.Category, error)
 	Update(category entities.Category) (entities.Category, error)
 	Delete(id string) error
+	GetAllCategory(pagination utils.Pagination, queryFilter string) ([]entities.Category, utils.Pagination)
 }
 type categoryRepository struct {
 	db *gorm.DB
@@ -45,4 +47,12 @@ func (r *categoryRepository) Update(category entities.Category) (entities.Catego
 func (r *categoryRepository) Delete(id string) error {
 	deleteErr := r.db.Where("id=?", id).Delete(&entities.Category{}).Error
 	return deleteErr
+}
+
+func (r *categoryRepository) GetAllCategory(pagination utils.Pagination, queryFilter string) ([]entities.Category, utils.Pagination) {
+	var category []entities.Category
+
+	r.db.Scopes(utils.Paginate(&category, &pagination, r.db)).Where(queryFilter).Find(&category)
+
+	return category, pagination
 }

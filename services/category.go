@@ -5,6 +5,7 @@ import (
 	"ecommerce/helpers"
 	"ecommerce/repositories"
 	"ecommerce/request"
+	"ecommerce/utils"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -14,6 +15,7 @@ type CategoryService interface {
 	FindByID(id string) (entities.Category, error)
 	Update(id string, input request.CategoryRequestInsert, url string) (entities.Category, error)
 	Delete(id string, loggedUser uuid.UUID) (bool, error)
+	GetAllCategory(searchFilter string, pagination utils.Pagination) ([]entities.Category, utils.Pagination)
 }
 type categoryService struct {
 	categoryRepository repositories.CategoryRepository
@@ -64,7 +66,6 @@ func (s *categoryService) Update(id string, input request.CategoryRequestInsert,
 	}
 	oldCategory.Name = input.Name
 	oldCategory.UrlImage = url
-
 	update, errUpdate := s.categoryRepository.Update(oldCategory)
 	if errUpdate != nil {
 		return update, errUpdate
@@ -83,7 +84,17 @@ func (s *categoryService) Delete(id string, loggedUser uuid.UUID) (bool, error) 
 	if errUpdate != nil {
 		return false, errUpdate
 	}
-	//s.categoryRepository.Delete(id)
-
+	s.categoryRepository.Delete(id)
 	return true, nil
+}
+
+func (s *categoryService) GetAllCategory(searchFilter string, pagination utils.Pagination) ([]entities.Category, utils.Pagination) {
+	query := ""
+	if searchFilter != "" && query != "" {
+		query += " AND LOWER(name) LIKE LOWER('%" + searchFilter + "%') AND LOWER(name) LIKE LOWER('%" + searchFilter + "%')"
+	} else if searchFilter != "" && query == "" {
+		query += "LOWER(name) LIKE LOWER('%" + searchFilter + "%') OR LOWER(name) LIKE LOWER('%" + searchFilter + "%')"
+	}
+	categories, pagination := s.categoryRepository.GetAllCategory(pagination, query)
+	return categories, pagination
 }

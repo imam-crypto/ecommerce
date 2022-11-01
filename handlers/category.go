@@ -172,3 +172,23 @@ func (h *categoryHandler) Delete(c *gin.Context) {
 	result := helpers.ConvDefaultResponse(http.StatusGone, true, "success", deleteOldImage)
 	c.JSON(http.StatusGone, result)
 }
+func (h *categoryHandler) Categories(c *gin.Context) {
+	var searchFilter string
+	queries := c.Request.URL.Query()
+	for queryKey, queryValue := range queries {
+		if queryKey == "search" {
+			searchFilter = queryValue[len(queryValue)-1]
+		}
+	}
+	pagination := h.pagination.GetPagination(c)
+	category, pagination := h.categoryService.GetAllCategory(searchFilter, pagination)
+
+	var categoryRes []formatresponse.CategoryResponse
+	for _, pi := range category {
+		res := formatresponse.ConvCategoryResponse(pi)
+		categoryRes = append(categoryRes, res)
+	}
+
+	result := helpers.ConvResponsePaginate(http.StatusOK, true, "Success", categoryRes, pagination)
+	c.JSON(http.StatusOK, result)
+}

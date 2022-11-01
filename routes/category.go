@@ -19,7 +19,7 @@ func CategoryRoute(config *utils.Config, db *gorm.DB, router *gin.RouterGroup) {
 	categoryRepository := repositories.NewCategoryRepository(db)
 	categoryService := services.NewCategoryService(categoryRepository)
 	categoryHandler := handlers.NewCategoryHandlers(authService, categoryService, *pagination)
-
+	router.GET("/categories", categoryHandler.Categories)
 	router.POST("/category/create", middleware.AuthAdmin(authService, userService), categoryHandler.CreateCategory)
 	router.GET("/category/:id", middleware.AuthAdmin(authService, userService), categoryHandler.Category)
 	router.PUT("/category/update/:id", middleware.AuthAdmin(authService, userService), categoryHandler.Update)
