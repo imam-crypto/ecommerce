@@ -20,3 +20,6 @@ type UpdateUserInput struct {
 	Gender     string `json:"gender"`
 	Name       string `json:"name"`
 }
+type UpdateUserRole struct {
+	Role string `json:"role"`
+}

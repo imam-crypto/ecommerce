@@ -12,7 +12,7 @@ func MigrateModels(db *gorm.DB) {
 
 	db.AutoMigrate(
 
-		// &entities.Category{},
+		&entities.Category{},
 
 		&entities.User{},
 	)

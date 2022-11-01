@@ -12,7 +12,6 @@ type User struct {
 	Name               string
 	Username           string
 	Email              string
-	NoKTP              string
 	Gender             string
 	Address            string
 	City               string

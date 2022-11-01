@@ -4,15 +4,20 @@ import (
 	"ecommerce/entities"
 	"ecommerce/repositories"
 	"ecommerce/request"
+	"ecommerce/utils"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServices interface {
-	FindUser(id string) (entities.User, error)
+	FindUserByID(id string) (entities.User, error)
 	Register(input request.RegisterUserInput) (entities.User, error)
 	CheckEmail(email string) (entities.User, error)
 	Login(input request.LoginUserInput) (entities.User, error)
+	UpdateUser(id string, input request.UpdateUserInput) (entities.User, error)
+	GetUsers() ([]entities.User, error)
+	FindUserAllPaginate(searchFilter string, pagination utils.Pagination) ([]*entities.User, utils.Pagination)
+	UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error)
 }
 
 type userService struct {
@@ -35,7 +40,7 @@ func (s *userService) CheckEmail(email string) (entities.User, error) {
 
 	return user, nil
 }
-func (s *userService) FindUser(id string) (entities.User, error) {
+func (s *userService) FindUserByID(id string) (entities.User, error) {
 
 	getUser, err := s.userRepository.GetUser(id)
 	if err != nil {
@@ -46,19 +51,17 @@ func (s *userService) FindUser(id string) (entities.User, error) {
 }
 
 func (s *userService) Register(input request.RegisterUserInput) (entities.User, error) {
-
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
 
 	if err != nil {
 		return entities.User{}, nil
 	}
 	Password := string(passwordHash)
-
 	user := entities.User{
 		Username: input.Username,
 		Email:    input.Email,
 		Password: Password,
-		Role:     "ADMIN",
+		Role:     "CUSTOMER",
 	}
 	NewUser, errCreate := s.userRepository.CreateUser(user)
 	if errCreate != nil {
@@ -77,13 +80,59 @@ func (s *userService) Login(input request.LoginUserInput) (entities.User, error)
 	if err != nil {
 		return user, err
 	}
-	//if user.Username == " " {
-	//	return user, errors.New("user not found")
-	//}
 
 	er := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if er != nil {
 		return user, er
 	}
 	return user, nil
+}
+func (s *userService) UpdateUser(id string, input request.UpdateUserInput) (entities.User, error) {
+	oldUser, err := s.userRepository.FindByIdUser(id)
+	if err != nil {
+		return oldUser, err
+	}
+	oldUser.Address = input.Address
+	oldUser.Gender = input.Gender
+	oldUser.Name = input.Name
+	oldUser.City = input.City
+	oldUser.Province = input.Province
+	oldUser.PostalCode = input.PostalCode
+
+	userUpdate, errUpdate := s.userRepository.Update(oldUser)
+	if errUpdate != nil {
+		return userUpdate, errUpdate
+	}
+	return userUpdate, nil
+}
+func (s *userService) GetUsers() ([]entities.User, error) {
+	getUser, err := s.userRepository.GetUsersWithCache()
+	if err != nil {
+		return getUser, err
+	}
+
+	return getUser, nil
+}
+func (s *userService) FindUserAllPaginate(searchFilter string, pagination utils.Pagination) ([]*entities.User, utils.Pagination) {
+	query := ""
+	if searchFilter != "" && query != "" {
+		query += " AND LOWER(username) LIKE LOWER('%" + searchFilter + "%') OR LOWER(email) LIKE LOWER('%" + searchFilter + "%')"
+	} else if searchFilter != "" && query == "" {
+		query += "LOWER(username) LIKE LOWER('%" + searchFilter + "%') OR LOWER(email) LIKE LOWER('%" + searchFilter + "%')"
+	}
+
+	users, pagination := s.userRepository.FindAllUsersPaginate(pagination, query)
+	return users, pagination
+}
+func (s *userService) UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error) {
+	oldRole, err := s.userRepository.FindByIdUser(id)
+	if err != nil {
+		return oldRole, err
+	}
+	oldRole.Role = input.Role
+	updateRole, errRole := s.userRepository.Update(oldRole)
+	if errRole != nil {
+		return oldRole, errRole
+	}
+	return updateRole, nil
 }

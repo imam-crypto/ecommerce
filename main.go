@@ -4,10 +4,9 @@ import (
 	"ecommerce/routes"
 	"ecommerce/utils"
 	"fmt"
-	"log"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 )
 
 func main() {
@@ -29,6 +28,7 @@ func main() {
 
 	// Routes V1
 	routes.UserRoute(&config, db, v1)
+	routes.CategoryRoute(&config, db, v1)
 	router.Run()
 }
 
@@ -38,6 +38,8 @@ func configInitalization() (utils.Config, *gorm.DB, error) {
 		db     *gorm.DB
 		err    error
 	)
+
+	// test connection redis
 
 	// Load configuration file
 	config, err = utils.LoadConfig(".", false)
