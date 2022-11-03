@@ -29,6 +29,7 @@ func main() {
 	// Routes V1
 	routes.UserRoute(&config, db, v1)
 	routes.CategoryRoute(&config, db, v1)
+	routes.ProductRoute(&config, db, v1)
 	router.Run()
 }
 

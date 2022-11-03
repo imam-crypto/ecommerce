@@ -13,8 +13,10 @@ func MigrateModels(db *gorm.DB) {
 	db.AutoMigrate(
 
 		&entities.Category{},
-
 		&entities.User{},
+		&entities.Product{},
+		&entities.Variant{},
+		&entities.ProductImage{},
 	)
 
 }

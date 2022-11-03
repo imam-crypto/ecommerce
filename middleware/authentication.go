@@ -5,7 +5,6 @@ import (
 	"ecommerce/services"
 	"ecommerce/utils"
 	"errors"
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -81,7 +80,7 @@ func AuthAdmin(authService ServiceAuth, userService services.UserServices) gin.H
 			return
 		}
 		//fmt.Println(claim, "claimnya ")
-		fmt.Println("xp nya", claim["ExpiresAt"].(float64))
+		//fmt.Println("xp nya", claim["ExpiresAt"].(float64))
 		idUser, _ := claim["user_id"].(string)
 		expNew, _ := claim["ExpiresAt"].(float64)
 		exp := int(expNew)
