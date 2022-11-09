@@ -112,7 +112,7 @@ func (r *userRepository) GetUsersWithCache() ([]entities.User, error) {
 func (r *userRepository) FindAllUsersPaginate(pagination utils.Pagination, queryFilter string) ([]*entities.User, utils.Pagination) {
 	var users []*entities.User
 
-	r.db.Scopes(utils.Paginate(&entities.User{}, &pagination, r.db)).Where(queryFilter).Find(&users)
+	r.db.Scopes(utils.Paginate(&entities.User{}, &pagination, r.db)).Where(queryFilter).Preload("Role").Find(&users)
 
 	return users, pagination
 }

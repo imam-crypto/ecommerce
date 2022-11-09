@@ -1,12 +1,12 @@
-package formatresponse
+package dtos
 
 import "ecommerce/entities"
 
 type ResponseUser struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	ID       string       `json:"id"`
+	Username string       `json:"username"`
+	Email    string       `json:"email"`
+	Role     ResponseRole `json:"role"`
 }
 
 func PaginateUserResponse(us *entities.User) ResponseUser {
@@ -14,7 +14,7 @@ func PaginateUserResponse(us *entities.User) ResponseUser {
 		ID:       us.Base.ID.String(),
 		Username: us.Username,
 		Email:    us.Email,
-		Role:     us.Role,
+		Role:     ConvResponseRole(us.Role),
 	}
 	return FormatUser
 
@@ -24,6 +24,6 @@ func ConvResponseUser(user entities.User) ResponseUser {
 	formatterUser := ResponseUser{}
 	formatterUser.Username = user.Username
 	formatterUser.Email = user.Email
-	formatterUser.Role = user.Role
+	formatterUser.Role = ConvResponseRole(user.Role)
 	return formatterUser
 }

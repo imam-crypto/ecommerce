@@ -6,6 +6,7 @@ import (
 	"ecommerce/request"
 	"ecommerce/utils"
 	"fmt"
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +18,7 @@ type UserServices interface {
 	UpdateUser(id string, input request.UpdateUserInput) (entities.User, error)
 	GetUsers() ([]entities.User, error)
 	FindUserAllPaginate(searchFilter string, pagination utils.Pagination) ([]*entities.User, utils.Pagination)
-	UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error)
+	//UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error)
 }
 
 type userService struct {
@@ -61,7 +62,7 @@ func (s *userService) Register(input request.RegisterUserInput) (entities.User, 
 		Username: input.Username,
 		Email:    input.Email,
 		Password: Password,
-		Role:     "CUSTOMER",
+		RoleID:   uuid.FromStringOrNil("17cbf61e-2d14-46de-8bc2-b6ca3a67ba16"),
 	}
 	NewUser, errCreate := s.userRepository.CreateUser(user)
 	if errCreate != nil {
@@ -124,15 +125,16 @@ func (s *userService) FindUserAllPaginate(searchFilter string, pagination utils.
 	users, pagination := s.userRepository.FindAllUsersPaginate(pagination, query)
 	return users, pagination
 }
-func (s *userService) UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error) {
-	oldRole, err := s.userRepository.FindByIdUser(id)
-	if err != nil {
-		return oldRole, err
-	}
-	oldRole.Role = input.Role
-	updateRole, errRole := s.userRepository.Update(oldRole)
-	if errRole != nil {
-		return oldRole, errRole
-	}
-	return updateRole, nil
-}
+
+//func (s *userService) UpdateUserRole(id string, input request.UpdateUserRole) (entities.User, error) {
+//	oldRole, err := s.userRepository.FindByIdUser(id)
+//	if err != nil {
+//		return oldRole, err
+//	}
+//	oldRole.RoleID.String() = input.Role
+//	updateRole, errRole := s.userRepository.Update(oldRole)
+//	if errRole != nil {
+//		return oldRole, errRole
+//	}
+//	return updateRole, nil
+//}

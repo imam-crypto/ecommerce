@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"database/sql"
 	"errors"
 
 	uuid "github.com/satori/go.uuid"
@@ -18,9 +19,10 @@ type User struct {
 	Province           string
 	PostalCode         string
 	Password           string
-	Image              string
+	Image              sql.NullString
 	ResetPasswordToken string
-	Role               string
+	RoleID             uuid.UUID `gorm:"type:uuid;"`
+	Role               Role      `gorm:"foreignKey:RoleID"`
 	Avatar             string
 }
 

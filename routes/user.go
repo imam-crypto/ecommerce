@@ -30,7 +30,7 @@ func UserRoute(config *utils.Config, db *gorm.DB, router *gin.RouterGroup) {
 	router.GET("/user/admin-profile", middleware.AuthAdmin(authService, userService), userhandler.Profile)
 	router.PUT("/user/update", middleware.AuthAdmin(authService, userService), userhandler.Update)
 	router.PUT("/user/admin-update", middleware.AuthAdmin(authService, userService), userhandler.Update)
-	router.PUT("/user/update-role/:id", middleware.AuthAdmin(authService, userService), userhandler.UpdateRole)
+	//router.PUT("/user/update-role/:id", middleware.AuthAdmin(authService, userService), userhandler.UpdateRole)
 	// router.POST("/user/logout", middleware.AuthUser(authService, userService), userhandler.Logout)
 	// router.DELETE("/user/delete/:id", middleware.AuthAdmin(authService, userService), userhandler.Delete)
 	// router.GET("/users", middleware.AuthAdmin(authService, userService), userhandler.GetAllUsers)

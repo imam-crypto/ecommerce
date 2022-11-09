@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"ecommerce/dtos"
 	"ecommerce/entities"
-	"ecommerce/formatresponse"
 	"ecommerce/helpers"
 	"ecommerce/middleware"
 	"ecommerce/request"
@@ -53,7 +53,7 @@ func (h *productHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusCreated, false, helpers.MessageSuccess, formatresponse.ConvProduct(createProduct, getCategory, getVariants))
+	result := helpers.ConvDefaultResponse(http.StatusCreated, false, helpers.MessageSuccess, dtos.ConvProduct(createProduct, getCategory, getVariants))
 	c.JSON(http.StatusCreated, result)
 	return
 }
@@ -71,7 +71,37 @@ func (h *productHandler) Product(c *gin.Context) {
 		c.JSON(http.StatusNotFound, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, formatresponse.NewConvProduct(findProduct, getCategory))
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, dtos.NewConvProduct(findProduct, getCategory))
 	c.JSON(http.StatusCreated, result)
+	return
+}
+
+func (h *productHandler) Update(c *gin.Context) {
+	var (
+		input request.ProductRequestUpdate
+	)
+	id := c.Param("id")
+	bindErr := c.ShouldBindJSON(&input)
+	//fmt.Println("inputan", input.Variant)
+	if bindErr != nil {
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, helpers.MessageBindRequest, bindErr)
+		c.JSON(http.StatusBadRequest, result)
+		return
+	}
+	updateProduct, errUpdate := h.productService.Update(id, input)
+	if errUpdate != nil {
+		result := helpers.ConvDefaultResponse(http.StatusNotModified, false, helpers.MessageFailed, errUpdate)
+		c.JSON(http.StatusNotModified, result)
+		return
+	}
+	_, errVariant := h.variantService.Update(id, input)
+	if errVariant != nil {
+		result := helpers.ConvDefaultResponse(http.StatusNotModified, false, helpers.MessageFailed, errUpdate)
+		c.JSON(http.StatusNotModified, result)
+		return
+	}
+	//fmt.Println("variant nya", updateVariant)
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, updateProduct)
+	c.JSON(http.StatusOK, result)
 	return
 }

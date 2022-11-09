@@ -27,7 +27,10 @@ func main() {
 	v1 := router.Group("/v1")
 
 	// Routes V1
+	routes.RoleRoute(&config, db, v1)
 	routes.UserRoute(&config, db, v1)
+	routes.MenuRoute(&config, db, v1)
+	routes.MenuAccessRoute(&config, db, v1)
 	routes.CategoryRoute(&config, db, v1)
 	routes.ProductRoute(&config, db, v1)
 	router.Run()

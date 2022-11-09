@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"ecommerce/dtos"
 	"ecommerce/entities"
-	"ecommerce/formatresponse"
 	"ecommerce/helpers"
 	"ecommerce/middleware"
 	"ecommerce/request"
@@ -38,7 +38,7 @@ func (h *categoryHandler) CreateCategory(c *gin.Context) {
 	var input request.CategoryRequestInsert
 	bindErr := c.ShouldBind(&input)
 	if bindErr != nil {
-		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, "check your input", bindErr)
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, helpers.MessageBindRequest, bindErr)
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
@@ -61,11 +61,11 @@ func (h *categoryHandler) CreateCategory(c *gin.Context) {
 
 	createCategory, errCreate := h.categoryService.CreateCategory(currentUser.ID, input, uploadUrl)
 	if errCreate != nil {
-		result := helpers.ConvDefaultResponse(http.StatusUnprocessableEntity, false, "failed", errCreate)
+		result := helpers.ConvDefaultResponse(http.StatusUnprocessableEntity, helpers.StatusFailed, "failed", errCreate)
 		c.JSON(http.StatusUnprocessableEntity, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusCreated, true, "success", formatresponse.ConvCategoryResponse(createCategory))
+	result := helpers.ConvDefaultResponse(http.StatusCreated, helpers.StatusOK, helpers.MessageSuccess, dtos.ConvCategoryResponse(createCategory))
 	c.JSON(http.StatusCreated, result)
 	return
 }
@@ -83,7 +83,7 @@ func (h *categoryHandler) Category(c *gin.Context) {
 		c.JSON(http.StatusNotFound, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", formatresponse.ConvCategoryResponse(category))
+	result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", dtos.ConvCategoryResponse(category))
 	c.JSON(http.StatusOK, result)
 	return
 }
@@ -116,7 +116,7 @@ func (h *categoryHandler) Update(c *gin.Context) {
 			return
 		}
 		fmt.Println("gamabarnyya tidak di ganti")
-		result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", formatresponse.ConvCategoryResponse(updateCategory))
+		result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", dtos.ConvCategoryResponse(updateCategory))
 		c.JSON(http.StatusOK, result)
 		return
 	}
@@ -143,7 +143,7 @@ func (h *categoryHandler) Update(c *gin.Context) {
 		return
 	}
 	fmt.Println("gambarnya di ganti")
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", formatresponse.ConvCategoryResponse(updateCategory))
+	result := helpers.ConvDefaultResponse(http.StatusOK, true, "success", dtos.ConvCategoryResponse(updateCategory))
 	c.JSON(http.StatusOK, result)
 	return
 }
@@ -183,9 +183,9 @@ func (h *categoryHandler) Categories(c *gin.Context) {
 	pagination := h.pagination.GetPagination(c)
 	category, pagination := h.categoryService.GetAllCategory(searchFilter, pagination)
 
-	var categoryRes []formatresponse.CategoryResponse
+	var categoryRes []dtos.CategoryResponse
 	for _, pi := range category {
-		res := formatresponse.ConvCategoryResponse(pi)
+		res := dtos.ConvCategoryResponse(pi)
 		categoryRes = append(categoryRes, res)
 	}
 

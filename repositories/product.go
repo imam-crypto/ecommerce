@@ -34,6 +34,7 @@ func (r *productRepositories) FindProductByID(productID string) (entities.Produc
 	return product, nil
 }
 func (r *productRepositories) Update(product entities.Product) (entities.Product, error) {
+
 	errUpdate := r.db.Save(&product).Error
 
 	if errUpdate != nil {

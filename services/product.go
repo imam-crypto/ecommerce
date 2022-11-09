@@ -10,6 +10,7 @@ import (
 type ProductService interface {
 	Create(loggedUser uuid.UUID, input request.ProductRequest) (entities.Product, error)
 	FindProductByID(productID string) (entities.Product, error)
+	Update(productID string, input request.ProductRequestUpdate) (entities.Product, error)
 }
 type productService struct {
 	productReposiories repositories.ProductRepositories
@@ -42,4 +43,21 @@ func (s *productService) FindProductByID(productID string) (entities.Product, er
 		return findProduct, errFind
 	}
 	return findProduct, nil
+}
+
+func (s *productService) Update(productID string, input request.ProductRequestUpdate) (entities.Product, error) {
+	oldProduct, errGet := s.productReposiories.FindProductByID(productID)
+	if errGet != nil {
+		return oldProduct, errGet
+	}
+	oldProduct.Title = input.Title
+	oldProduct.Description = input.Description
+	oldProduct.Price = input.Price
+	//oldProduct.CategoryID = uuid.FromString(input.CategoryID)
+
+	update, errUpdate := s.productReposiories.Update(oldProduct)
+	if errUpdate != nil {
+		return update, errUpdate
+	}
+	return update, nil
 }

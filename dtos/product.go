@@ -1,4 +1,4 @@
-package formatresponse
+package dtos
 
 import "ecommerce/entities"
 

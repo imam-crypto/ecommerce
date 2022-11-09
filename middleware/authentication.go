@@ -13,7 +13,7 @@ import (
 )
 
 type ServiceAuth interface {
-	GenerateToken(userID string) (string, time.Time, error)
+	GenerateToken(userID string) (string, string, time.Time, error)
 	ValidateToken(tokenEncode string) (*jwt.Token, error)
 	//RefreshToken(userID string) (string, time.Time, error)
 }
@@ -28,19 +28,27 @@ func NewService() *jwtService {
 var config, _ = utils.LoadConfig(".", false)
 var SECRET_KEY = []byte(config.SecretKey)
 
-func (s jwtService) GenerateToken(userID string) (string, time.Time, error) {
+func (s jwtService) GenerateToken(userID string) (string, string, time.Time, error) {
 
 	expirationTime := time.Now().Add(1 * time.Hour)
+	refreshExpirationTime := time.Now().Add(2 * time.Hour)
 	claim := jwt.MapClaims{
 		"user_id":   userID,
 		"ExpiresAt": expirationTime.Unix(),
 	}
+	refreshclaim := jwt.MapClaims{
+		"user_id":   userID,
+		"ExpiresAt": refreshExpirationTime.Unix(),
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	signedToken, err := token.SignedString(SECRET_KEY)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshclaim)
+	signedRefreshToken, _ := refreshToken.SignedString(SECRET_KEY)
 	if err != nil {
-		return signedToken, expirationTime, err
+		return signedToken, signedRefreshToken, expirationTime, err
 	}
-	return signedToken, expirationTime, nil
+
+	return signedToken, signedRefreshToken, expirationTime, nil
 }
 func (s jwtService) ValidateToken(tokenEncode string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenEncode, func(token *jwt.Token) (interface{}, error) {
@@ -132,7 +140,7 @@ func AuthCustomer(authService ServiceAuth, userService services.UserServices) gi
 			return
 		}
 		user, err := userService.FindUserByID(idUser)
-		if user.Role != "CUSTOMER" {
+		if user.Role.Name != "CUSTOMER" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}

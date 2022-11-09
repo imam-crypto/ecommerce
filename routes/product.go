@@ -26,4 +26,5 @@ func ProductRoute(config *utils.Config, db *gorm.DB, router *gin.RouterGroup) {
 	productHandler := handlers.NewProductHandler(authService, productService, categoryService, variantService, *pagination)
 	router.POST("/product/create", middleware.AuthAdmin(authService, userService), productHandler.Create)
 	router.GET("/product/:id", middleware.AuthAdmin(authService, userService), productHandler.Product)
+	router.PUT("/product/update/:id", middleware.AuthAdmin(authService, userService), productHandler.Update)
 }

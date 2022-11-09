@@ -11,7 +11,7 @@ type Category struct {
 	Name          string
 	PublicIDCloud string
 	UrlImage      string
-	Category      Product `gorm:"foreignKey:CategoryID"`
+	//Category      Product `gorm:"foreignKey:CategoryID"`
 }
 
 func (t *Category) BeforeCreate(db *gorm.DB) (err error) {

@@ -10,5 +10,5 @@ const (
 	MessageBindRequest  = "Check your input"
 	MessageFailedInsert = "Failed insert"
 	StatusOK            = true
-	StatusFaild         = false
+	StatusFailed        = false
 )

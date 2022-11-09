@@ -14,7 +14,7 @@ type Product struct {
 	Description string
 	Price       int
 	Variant     []Variant `gorm:"foreignKey:ProductID"`
-	//Category    Category  `gorm:"foreignKey:CategoryID"`
+	Category    Category  `gorm:"foreignKey:CategoryID"`
 }
 
 func (t *Product) BeforeCreate(db *gorm.DB) (err error) {

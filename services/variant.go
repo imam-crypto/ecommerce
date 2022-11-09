@@ -11,6 +11,7 @@ import (
 type VariantService interface {
 	Create(productID uuid.UUID, input request.ProductRequest) ([]entities.Variant, error)
 	FindVariantByProductID(productID string) ([]entities.Variant, error)
+	Update(productID string, input request.ProductRequestUpdate) ([]request.VariantRequestUpdate, error)
 }
 type varianService struct {
 	variantRepositories repositories.VariantRepository
@@ -32,11 +33,11 @@ func (s *varianService) Create(productID uuid.UUID, input request.ProductRequest
 			Quantity:   varianResp.Quantity,
 		}
 		variants = append(variants, create)
-		createVariant, errCreate := s.variantRepositories.Create(create)
+		_, errCreate := s.variantRepositories.Create(create)
 		if errCreate != nil {
 			return variants, errCreate
 		}
-		fmt.Println("create varian di service variant", createVariant)
+		//fmt.Println("create varian di service variant", createVariant)
 	}
 	return variants, nil
 }
@@ -47,4 +48,78 @@ func (s *varianService) FindVariantByProductID(productID string) ([]entities.Var
 		return find, err
 	}
 	return find, nil
+}
+func (s *varianService) Update(productID string, input request.ProductRequestUpdate) ([]request.VariantRequestUpdate, error) {
+	//2febe5f9-1ee5-4a52-9b1b-bbe074546a86
+
+	variantExistingDatas, _ := s.variantRepositories.FindVariantByProductID(productID)
+	for _, exist := range variantExistingDatas {
+		var isAvailable bool
+		fmt.Println("existID [][][][", exist.ID)
+		for _, dataInput := range input.Variant {
+			if exist.ID.String() == dataInput.ID {
+				isAvailable = true
+				continue
+			}
+		}
+		fmt.Println("isi is available", isAvailable)
+		if !isAvailable {
+			err := s.variantRepositories.Delete(exist.ID.String())
+			fmt.Println("kena delete [][][][]", exist.ID.String())
+			if err != nil {
+				fmt.Println("delete", exist.ID.String())
+			}
+		}
+	}
+	// check existing data || delete
+	//checkExitingDatas := s.checkDataExisting(productID, input)
+	//fmt.Println("existing datas", checkExitingDatas)
+	for _, variant := range input.Variant {
+		variantData, _ := s.variantRepositories.FindVariantByID(variant.ID)
+		if variantData.ID != uuid.Nil {
+			variantData.Sku = variant.Sku
+			variantData.Colour = variant.Colour
+			variantData.Size = variant.Size
+			variant.Quantity = variant.Quantity
+			_, err := s.variantRepositories.Update(variantData)
+			if err != nil {
+				break
+			}
+		} else {
+			create := entities.Variant{
+				ProductID:  uuid.FromStringOrNil(variant.ProductID),
+				Sku:        variant.Sku,
+				Colour:     variant.Colour,
+				Size:       variant.Size,
+				Ingredient: variant.Ingredient,
+				Quantity:   variant.Quantity,
+			}
+			_, errCreat := s.variantRepositories.Create(create)
+			if errCreat != nil {
+				break
+			}
+		}
+	}
+	return input.Variant, nil
+}
+
+func (s *varianService) checkDataExisting(productID string, input request.ProductRequest) bool {
+	variantExistingDatas, _ := s.variantRepositories.FindVariantByProductID(productID)
+	var isAvailable bool
+	for _, exist := range variantExistingDatas {
+
+		for _, dataInput := range input.Variant {
+			if exist.ID == dataInput.ID {
+				isAvailable = true
+				break
+			}
+		}
+		if !isAvailable {
+			err := s.variantRepositories.Delete(exist.ID.String())
+			if err != nil {
+				fmt.Println("delete")
+			}
+		}
+	}
+	return isAvailable
 }
