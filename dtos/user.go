@@ -3,10 +3,16 @@ package dtos
 import "ecommerce/entities"
 
 type ResponseUser struct {
-	ID       string       `json:"id"`
-	Username string       `json:"username"`
-	Email    string       `json:"email"`
-	Role     ResponseRole `json:"role"`
+	ID         string       `json:"id"`
+	Name       string       `json:"name"`
+	Username   string       `json:"username"`
+	Email      string       `json:"email"`
+	Gender     string       `json:"gender"`
+	Address    string       `json:"address"`
+	City       string       `json:"city"`
+	Province   string       `json:"province"`
+	PostalCode string       `json:"postal_code"`
+	Role       ResponseRole `json:"role"`
 }
 
 func PaginateUserResponse(us *entities.User) ResponseUser {

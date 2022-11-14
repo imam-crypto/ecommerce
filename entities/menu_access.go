@@ -8,14 +8,13 @@ import (
 
 type MenuAccess struct {
 	Base
-	MenuID uuid.UUID `gorm:"type:uuid;" json:"menu_id"`
-	RoleID uuid.UUID `gorm:"type:uuid;" json:"role_id"`
-	//Menu   Menu      `gorm:"foreignKey:MenuID"`
-	//Role         []Role    `gorm:"foreignKey:RoleID;"`
-	ReadAccess   bool `json:"read_access"`
-	CreateAccess bool `json:"create_access"`
-	UpdateAccess bool `json:"update_access"`
-	DeleteAccess bool `json:"delete_access"`
+	MenuID       uuid.UUID `gorm:"type:uuid;" json:"menu_id"`
+	RoleID       uuid.UUID `gorm:"type:uuid;" json:"role_id"`
+	ReadAccess   bool      `json:"read_access"`
+	CreateAccess bool      `json:"create_access"`
+	UpdateAccess bool      `json:"update_access"`
+	DeleteAccess bool      `json:"delete_access"`
+	Menu         Menu      `gorm:"foreignKey:MenuID"`
 }
 
 func (t *MenuAccess) BeforeCreate(db *gorm.DB) (err error) {

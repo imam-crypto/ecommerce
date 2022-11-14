@@ -5,7 +5,6 @@ import (
 	"ecommerce/entities"
 	"ecommerce/helpers"
 	"ecommerce/middleware"
-	"ecommerce/request"
 	"ecommerce/services"
 	"ecommerce/utils"
 	"fmt"
@@ -24,46 +23,45 @@ func NewUserHandlers(authService middleware.ServiceAuth, userService services.Us
 }
 
 func (h *userHandler) GetUser(c *gin.Context) {
-
 	id := c.Param("id")
 	fmt.Print(id)
 }
 
 func (h *userHandler) Register(c *gin.Context) {
-	var input request.RegisterUserInput
+	var input dtos.RegisterRequest
 	bindErr := c.ShouldBindJSON(&input)
 	if bindErr != nil {
-		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, "email has been used", "failed Register")
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, helpers.StatusFailed, helpers.MessageEmailAvailable, helpers.MessageFailed)
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
 	check, _ := h.userService.CheckEmail(input.Email)
 	if check.Email == input.Email {
-		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, "email has been used", "failed Register")
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, helpers.StatusFailed, helpers.MessageEmailAvailable, helpers.MessageFailed)
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
 	newUser, err := h.userService.Register(input)
 	if err != nil {
-		result := helpers.ConvDefaultResponse(http.StatusUnprocessableEntity, false, "failed", "failed Register")
+		result := helpers.ConvDefaultResponse(http.StatusUnprocessableEntity, helpers.StatusFailed, helpers.MessageFailed, helpers.MessageFailed)
 		c.JSON(http.StatusUnprocessableEntity, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "Success", dtos.ConvResponseUser(newUser))
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, dtos.ConvResponseUser(newUser))
 	c.JSON(http.StatusOK, result)
 }
 
 func (h *userHandler) Login(c *gin.Context) {
-	var input request.LoginUserInput
+	var input dtos.LoginRequest
 	bindErr := c.ShouldBindJSON(&input)
 	if bindErr != nil {
-		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, "check your input", "failed login")
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, helpers.StatusFailed, helpers.MessageFailed, helpers.MessageFailed)
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
 	loogedinUser, erCek := h.userService.Login(input)
 	if erCek != nil {
-		result := helpers.ConvDefaultResponse(http.StatusNotFound, false, "failed", erCek)
+		result := helpers.ConvDefaultResponse(http.StatusNotFound, helpers.StatusFailed, helpers.MessageNotFound, erCek)
 		c.JSON(http.StatusNotFound, result)
 		return
 	}
@@ -71,38 +69,43 @@ func (h *userHandler) Login(c *gin.Context) {
 	token, rfToken, exp, errToken := h.authService.GenerateToken(loogedinUser.ID.String())
 	// exp := token.ExpiresAt
 	if errToken != nil {
-		result := helpers.ConvDefaultResponse(http.StatusInternalServerError, false, "failed", errToken)
+		result := helpers.ConvDefaultResponse(http.StatusInternalServerError, helpers.StatusFailed, helpers.MessageFailed, errToken)
 		c.JSON(http.StatusInternalServerError, result)
 		return
 	}
 	start := exp.Format("02-01-2006 15:04:05")
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "Success", dtos.ConvResponseUserLogin(loogedinUser, token, rfToken, start))
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, dtos.ConvLoginResponse(loogedinUser, token, rfToken, start))
 	c.JSON(http.StatusOK, result)
 }
 func (h *userHandler) Profile(c *gin.Context) {
 	currentUser := c.MustGet("current_user").(entities.User)
 	// role := currentUser.Role
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "Success", dtos.ConvResponseUser(currentUser))
+	getUser, errGet := h.userService.FindUserByID(currentUser.ID.String())
+	if errGet != nil {
+		result := helpers.ConvDefaultResponse(http.StatusNotFound, helpers.StatusFailed, helpers.MessageNotFound, errGet)
+		c.JSON(http.StatusNotFound, result)
+		return
+	}
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, dtos.ConvResponseUser(getUser))
 	c.JSON(http.StatusOK, result)
 }
 
 func (h *userHandler) Update(c *gin.Context) {
-	var input request.UpdateUserInput
+	var input dtos.UpdateRequest
 	bindErr := c.ShouldBindJSON(&input)
 	if bindErr != nil {
-		result := helpers.ConvDefaultResponse(http.StatusBadRequest, false, "check your input", "failed update")
+		result := helpers.ConvDefaultResponse(http.StatusBadRequest, helpers.StatusFailed, helpers.MessageFailed, helpers.MessageFailed)
 		c.JSON(http.StatusBadRequest, result)
 		return
 	}
 	currentUser := c.MustGet("current_user").(entities.User)
-
 	updateUser, errUpdate := h.userService.UpdateUser(currentUser.ID.String(), input)
 	if errUpdate != nil {
-		result := helpers.ConvDefaultResponse(http.StatusInternalServerError, false, "failed update", errUpdate)
+		result := helpers.ConvDefaultResponse(http.StatusInternalServerError, helpers.StatusFailed, helpers.MessageFailed, errUpdate)
 		c.JSON(http.StatusInternalServerError, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "Success", dtos.ConvResponseUser(updateUser))
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusOK, helpers.MessageSuccess, dtos.ConvResponseUser(updateUser))
 	c.JSON(http.StatusOK, result)
 	return
 }
@@ -110,11 +113,11 @@ func (h *userHandler) Update(c *gin.Context) {
 func (h *userHandler) GetUsers(c *gin.Context) {
 	res, err := h.userService.GetUsers()
 	if err != nil {
-		result := helpers.ConvDefaultResponse(http.StatusNotFound, false, "failed", err)
+		result := helpers.ConvDefaultResponse(http.StatusNotFound, helpers.StatusFailed, helpers.MessageFailed, err)
 		c.JSON(http.StatusNotFound, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusOK, true, "Success", res)
+	result := helpers.ConvDefaultResponse(http.StatusOK, helpers.StatusFailed, helpers.MessageFailed, res)
 	c.JSON(http.StatusOK, result)
 }
 func (h *userHandler) GetAllUsers(c *gin.Context) {

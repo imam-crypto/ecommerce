@@ -49,7 +49,7 @@ func (r *userRepository) FindByEmail(email string) (entities.User, error) {
 func (r *userRepository) FindByIdUser(id string) (entities.User, error) {
 
 	var user entities.User
-	findUser := r.db.Where("id =?", id).First(&user).Error
+	findUser := r.db.Preload("Role").Preload("Role.MenuAccess").Preload("Role.MenuAccess.Menu").Where("id =?", id).First(&user).Error
 	if findUser != nil {
 		return user, findUser
 	}

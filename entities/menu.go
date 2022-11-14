@@ -10,7 +10,7 @@ type Menu struct {
 	Base
 	MenuName string
 	Uri      string
-	MenuID   MenuAccess `gorm:"foreignKey:MenuID"`
+	//MenuID   MenuAccess `gorm:"foreignKey:MenuID"`
 }
 
 func (t *Menu) BeforeCreate(db *gorm.DB) (err error) {

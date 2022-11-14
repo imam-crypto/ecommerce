@@ -8,12 +8,11 @@ import (
 
 type Product struct {
 	Base
-
 	CategoryID  uuid.UUID `gorm:"type:uuid;"`
 	Title       string
 	Description string
 	Price       int
-	Variant     []Variant `gorm:"foreignKey:ProductID"`
+	Variant     []Variant `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;'"`
 	Category    Category  `gorm:"foreignKey:CategoryID"`
 }
 

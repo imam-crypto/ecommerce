@@ -1,6 +1,8 @@
 package dtos
 
-import "ecommerce/entities"
+import (
+	"ecommerce/entities"
+)
 
 type ProductResponse struct {
 	ID          string            `json:"id"`
@@ -9,8 +11,22 @@ type ProductResponse struct {
 	Description string            `json:"description"`
 	Variant     []VariantResponse `json:"variant"`
 }
+type ProductResponseUpdate struct {
+	ID          string                  `json:"id"`
+	Category    CategoryResponse        `json:"category"`
+	Title       string                  `json:"title"`
+	Description string                  `json:"description"`
+	Variant     []VariantResponseUpdate `json:"variant"`
+}
 
 type VariantResponse struct {
+	ID         string `json:"id"`
+	Colour     string `json:"colour"`
+	Size       string `json:"size"`
+	Quantity   int    `json:"quantity"`
+	Ingredient string `json:"ingredient"`
+}
+type VariantResponseUpdate struct {
 	ID         string `json:"id"`
 	Colour     string `json:"colour"`
 	Size       string `json:"size"`
@@ -54,4 +70,18 @@ func ConvVariantResponse(variant entities.Variant) VariantResponse {
 		Quantity:   variant.Quantity,
 	}
 	return formatVariant
+}
+
+func ConvProductresponsePaginate(product entities.Product) ProductResponse {
+	formatProduct := ProductResponse{
+		ID:          product.ID.String(),
+		Category:    ConvCategoryResponse(product.Category),
+		Title:       product.Title,
+		Description: product.Description,
+	}
+	for _, variantObj := range product.Variant {
+		variantRes := ConvVariantResponse(variantObj)
+		formatProduct.Variant = append(formatProduct.Variant, variantRes)
+	}
+	return formatProduct
 }

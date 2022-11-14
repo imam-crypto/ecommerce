@@ -30,13 +30,13 @@ func (h *menuHandler) Create(c *gin.Context) {
 		return
 	}
 	currentUser := c.MustGet("current_user").(entities.User)
-	_, errCreate := h.menuService.Create(currentUser.ID, input)
+	menuCreate, errCreate := h.menuService.Create(currentUser.ID, input)
 	if errCreate != nil {
 		result := helpers.ConvDefaultResponse(http.StatusUnprocessableEntity, helpers.StatusFailed, helpers.MessageFailed, errCreate)
 		c.JSON(http.StatusUnprocessableEntity, result)
 		return
 	}
-	result := helpers.ConvDefaultResponse(http.StatusCreated, helpers.StatusOK, helpers.MessageSuccess, helpers.StatusOK)
+	result := helpers.ConvDefaultResponse(http.StatusCreated, helpers.StatusOK, helpers.MessageSuccess, menuCreate)
 	c.JSON(http.StatusCreated, result)
 	return
 }

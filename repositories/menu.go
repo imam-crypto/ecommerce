@@ -7,6 +7,7 @@ import (
 
 type MenuRepository interface {
 	Create(menu entities.Menu) (entities.Menu, error)
+	Delete(id string) error
 }
 type menuRepository struct {
 	db *gorm.DB
@@ -22,4 +23,8 @@ func (r *menuRepository) Create(menu entities.Menu) (entities.Menu, error) {
 		return menu, errCreate
 	}
 	return menu, nil
+}
+func (r *menuRepository) Delete(id string) error {
+	deleteErr := r.db.Where("id=?", id).Delete(&entities.Menu{}).Error
+	return deleteErr
 }

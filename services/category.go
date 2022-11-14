@@ -3,6 +3,7 @@ package services
 import (
 	"ecommerce/entities"
 	"ecommerce/helpers"
+	"ecommerce/mappers"
 	"ecommerce/repositories"
 	"ecommerce/request"
 	"ecommerce/utils"
@@ -32,14 +33,7 @@ func (s *categoryService) ImageUpload(reqImage request.CategoryImageRequest, pub
 	return uploadUrl, publicID, nil
 }
 func (s *categoryService) CreateCategory(loggedUser uuid.UUID, input request.CategoryRequestInsert, url string) (entities.Category, error) {
-	mapCreate := entities.Category{
-		Base: entities.Base{
-			CreatedBy: loggedUser,
-		},
-		Name:          input.Name,
-		PublicIDCloud: input.PublicIDCloud,
-		UrlImage:      url,
-	}
+	mapCreate := mappers.CreateCategory(loggedUser, input, url)
 	newCat, err := s.categoryRepository.Create(mapCreate)
 	if err != nil {
 		return newCat, err
@@ -60,13 +54,8 @@ func (s *categoryService) Update(id string, input request.CategoryRequestInsert,
 	if err != nil {
 		return oldCategory, err
 	}
-	var newCode = input.PublicIDCloud
-	if newCode != "" {
-		oldCategory.PublicIDCloud = newCode
-	}
-	oldCategory.Name = input.Name
-	oldCategory.UrlImage = url
-	update, errUpdate := s.categoryRepository.Update(oldCategory)
+	mapUpdate := mappers.UpdateCategory(oldCategory, input, url)
+	update, errUpdate := s.categoryRepository.Update(mapUpdate)
 	if errUpdate != nil {
 		return update, errUpdate
 	}

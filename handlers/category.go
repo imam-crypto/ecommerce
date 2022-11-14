@@ -172,6 +172,7 @@ func (h *categoryHandler) Delete(c *gin.Context) {
 	result := helpers.ConvDefaultResponse(http.StatusGone, true, "success", deleteOldImage)
 	c.JSON(http.StatusGone, result)
 }
+
 func (h *categoryHandler) Categories(c *gin.Context) {
 	var searchFilter string
 	queries := c.Request.URL.Query()

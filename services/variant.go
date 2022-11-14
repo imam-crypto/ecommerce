@@ -12,6 +12,7 @@ type VariantService interface {
 	Create(productID uuid.UUID, input request.ProductRequest) ([]entities.Variant, error)
 	FindVariantByProductID(productID string) ([]entities.Variant, error)
 	Update(productID string, input request.ProductRequestUpdate) ([]request.VariantRequestUpdate, error)
+	DeleteByIdProduct(idProduct string, loggedUser uuid.UUID) (bool, error)
 }
 type varianService struct {
 	variantRepositories repositories.VariantRepository
@@ -50,40 +51,20 @@ func (s *varianService) FindVariantByProductID(productID string) ([]entities.Var
 	return find, nil
 }
 func (s *varianService) Update(productID string, input request.ProductRequestUpdate) ([]request.VariantRequestUpdate, error) {
-	//2febe5f9-1ee5-4a52-9b1b-bbe074546a86
 
-	variantExistingDatas, _ := s.variantRepositories.FindVariantByProductID(productID)
-	for _, exist := range variantExistingDatas {
-		var isAvailable bool
-		fmt.Println("existID [][][][", exist.ID)
-		for _, dataInput := range input.Variant {
-			if exist.ID.String() == dataInput.ID {
-				isAvailable = true
-				continue
-			}
-		}
-		fmt.Println("isi is available", isAvailable)
-		if !isAvailable {
-			err := s.variantRepositories.Delete(exist.ID.String())
-			fmt.Println("kena delete [][][][]", exist.ID.String())
-			if err != nil {
-				fmt.Println("delete", exist.ID.String())
-			}
-		}
-	}
 	// check existing data || delete
-	//checkExitingDatas := s.checkDataExisting(productID, input)
-	//fmt.Println("existing datas", checkExitingDatas)
+	checkExitingDatas := s.checkDataExisting(productID, input)
+	fmt.Println("existing datas", checkExitingDatas)
 	for _, variant := range input.Variant {
 		variantData, _ := s.variantRepositories.FindVariantByID(variant.ID)
 		if variantData.ID != uuid.Nil {
 			variantData.Sku = variant.Sku
 			variantData.Colour = variant.Colour
 			variantData.Size = variant.Size
-			variant.Quantity = variant.Quantity
+			variantData.Quantity = variant.Quantity
 			_, err := s.variantRepositories.Update(variantData)
 			if err != nil {
-				break
+				continue
 			}
 		} else {
 			create := entities.Variant{
@@ -103,13 +84,13 @@ func (s *varianService) Update(productID string, input request.ProductRequestUpd
 	return input.Variant, nil
 }
 
-func (s *varianService) checkDataExisting(productID string, input request.ProductRequest) bool {
+func (s *varianService) checkDataExisting(productID string, input request.ProductRequestUpdate) bool {
 	variantExistingDatas, _ := s.variantRepositories.FindVariantByProductID(productID)
 	var isAvailable bool
 	for _, exist := range variantExistingDatas {
 
 		for _, dataInput := range input.Variant {
-			if exist.ID == dataInput.ID {
+			if exist.ID.String() == dataInput.ID {
 				isAvailable = true
 				break
 			}
@@ -122,4 +103,18 @@ func (s *varianService) checkDataExisting(productID string, input request.Produc
 		}
 	}
 	return isAvailable
+}
+
+func (s *varianService) DeleteByIdProduct(productID string, loggedUser uuid.UUID) (bool, error) {
+	variantExistingDatas, _ := s.variantRepositories.FindVariantByProductID(productID)
+	for _, exist := range variantExistingDatas {
+		exist.DeletedBy = loggedUser
+		update, _ := s.variantRepositories.Update(exist)
+		fmt.Println("update nya", update)
+		delErr := s.variantRepositories.Delete(exist.ID.String())
+		if delErr != nil {
+			return false, delErr
+		}
+	}
+	return true, nil
 }
